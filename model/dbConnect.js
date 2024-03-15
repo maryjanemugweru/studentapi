@@ -28,6 +28,10 @@ const sequelize = new Sequelize(
     db.Sequelize = Sequelize;
     db.sequelize = sequelize;
 
-    db.student = require("./studentModel")(sequelize,DataTypes);
+    db.students = require("./studentModel")(sequelize,DataTypes);
+    db.sequelize.sync({force:false})
+    .then(()=>{
+        console.log('re-sync done')
+    })
 
     module.exports = db;

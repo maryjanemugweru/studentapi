@@ -29,6 +29,9 @@ const sequelize = new Sequelize(
     db.sequelize = sequelize;
 
     db.students = require("./studentModel")(sequelize,DataTypes);
+    db.course = require("./courseModel")(sequelize, DataTypes);
+    db.reg = require("./regModel")(sequelize, DataTypes);
+
     db.sequelize.sync({force:false})
     .then(()=>{
         console.log('re-sync done')

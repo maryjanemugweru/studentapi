@@ -1,6 +1,5 @@
 const JWT = require("jsonwebtoken");
-const createError = require("http-errors");
-const User = require("../model/regModel");
+const createHttpError = require("http-errors");
 
 module.exports = {
     signAccessToken:(UserId) => {
@@ -15,7 +14,7 @@ module.exports = {
             JWT.sign(payload, secret, options, (error, token) => {
                 if (error) {
                     console.log(error.message)
-                    reject(createError.InternalServerError());
+                    reject(createHttpError.InternalServerError());
                 }
                 resolve(token);
             })
@@ -23,16 +22,16 @@ module.exports = {
     },
 
     verifyAccessToken:(req, res, next) => {
-        if(!req.headers['authorization']) return next(createError.Unauthorized())
+        if(!req.headers['authorization']) return next(createHttpError.Unauthorized())
         const authHeader = req.headers['authorization']
         const bearerToken = authHeader.split(' ')
         const token = bearerToken[1]
         JWT.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
             if(err) {
                 if(err.name === 'JsonWebTokenError') {
-                    return next(createError.Unauthorized())
+                    return next(createHttpError.Unauthorized())
                 } else {
-                    return next(createError.Unauthorized(err.message))
+                    return next(createHttpError.Unauthorized(err.message))
                 }
             }
         })
@@ -50,7 +49,7 @@ module.exports = {
             JWT.sign(payload, secret, options, (error, token) => {
                 if(error) {
                     console.log(error.message)
-                    reject(createError.InternalServerError())
+                    reject(createHttpError.InternalServerError())
                 }
                 resolve(token);
             })
@@ -60,7 +59,7 @@ module.exports = {
     verifyRefreshToken:(refreshToken) => {
         return new Promise((resolve, reject) => {
             JWT.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, payload) => {
-                if(err) return reject(createError.Unauthorized())
+                if(err) return reject(createHttpError.Unauthorized())
                 const userId = payload.aud
             resolve(userId.toString())
             })

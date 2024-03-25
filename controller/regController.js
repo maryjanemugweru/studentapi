@@ -1,27 +1,33 @@
 const db = require("../model/dbConnect");
 const {signAccessToken} = require("../helpers/jwtHelpers");
-
+const {authSchema} =require("../helpers/validateSchema");
+const createHttpError = require("http-errors");
 const reg = db.reg;
 
 module.exports = {
     // Add Reg
     addReg: async(req, res, next) => {
         try {
-            const {regName, regEmail, regPassword} = req.body;
+            const {regName, regEmail, regPassword} = await authSchema.validateAsync(req.body);
             const exists = await reg.findOne({where: {regEmail}})
             if (exists) {
-                throw createError.Conflict(`${regEmail} has already been registered.`)
+                throw createHttpError.Conflict(`${regEmail} has already been registered.`)
             }
             const newUser = new reg({regName, regEmail, regPassword})
             const savedUser = await newUser.save()
 
             const accessToken = await signAccessToken(savedUser.reg_id)
-            res.status(200).send({accessToken})
+            res.send({accessToken})
         } catch(error) {
+            console.log(error)
+
+            if(error.isJoi === true)error.status = 422
+                next(error)
             next(error)
+
         }
     },
-    
+
     // Get All Reg
     getAllReg: async(req, res, next) => {
         try {
@@ -39,7 +45,7 @@ module.exports = {
             let Reg = await reg.findOne({where: {reg_id: id}})
 
             if(!reg) {
-                throw(createError(404, "Registration does not exist."))
+                throw(createHttpError(404, "Registration does not exist."))
             }
             res.status(200).send(Reg)
         } catch (error) {
@@ -55,7 +61,7 @@ module.exports = {
             const updateReg = await reg.update(req.body, {where: {reg_id: id}})
 
             if(!reg) {
-                throw(createError(404, "Registration does not exist."))
+                throw(createHttpError(404, "Registration does not exist."))
             }
             res.status(200).send(updateReg)
         } catch (error) {

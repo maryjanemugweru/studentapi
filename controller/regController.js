@@ -28,6 +28,29 @@ module.exports = {
         }
     },
 
+    loginUser: async (req, res, next) => {
+        try {
+            const result = await authSchema.validateAsync(req.body);
+            const user = await reg.findOne({where: {email: result.regEmail}})
+
+            if (!user) throw createHttpError.NotFound("User not registered");
+
+            // Watching the password
+            const isMatch = await reg.isValidPassword(result.regPassword);
+            if (!isMatch) throw createHttpError.Unauthorized("Invalid Password");
+
+            // If password matches, then generate token
+            const accessToken = await signAccessToken(reg_id);
+            const refreshToken = await signAccessToken(reg_id);
+
+            res.send({accessToken, refreshToken})
+        } catch (error) {
+            if (error.isJoi === true)
+                return next(createHttpError.BadRequest("Invalid Username/Password"));
+            next(error)
+        }
+    },
+
     // Get All Reg
     getAllReg: async(req, res, next) => {
         try {

@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
         // Function to compare the entered password with the saved hashed password
         Reg.prototype.isValidPassword = async function(password) {
             try {
-                return await bcrypt.compare(password, this.password);
+                return await bcrypt.compare(password, this.regPassword);
             } catch (error) {
                 throw error;
             }

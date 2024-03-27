@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const studentRoute =require("./routes/studentRoute");
 const courseRoute = require("./routes/courseRoute");
+const cors = require("cors");
 const regRoute = require("./routes/regRoute");
 const createError = require("http-errors");
 require("dotenv").config();
@@ -9,6 +10,12 @@ require("./model/dbConnect");
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}))
+
+const corsOptions = {
+    origin: "http://localhost:3001"
+}
+
+app.use(cors(corsOptions));
 
 app.use('/api/students', studentRoute);
 app.use("/api/courses", courseRoute);
@@ -26,7 +33,7 @@ app.use((err, req, res, next) => {
         res.status(401).send({
             error: {
                 status: 401,
-                message: "Unauthorized: Invalid username/password"
+                message: "Unauthorized: No Access"
             }
         });
     } else {
